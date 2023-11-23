@@ -1,0 +1,15 @@
+Vagrant.configure("2") do |config|
+    config.vm.box = "ubuntu/bionic64"
+    config.vm.network "forwarded_port", guest: 8085, host: 8085
+    config.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y docker.io
+      curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+      chmod +x ./kind
+      sudo mv ./kind /usr/local/bin/kind
+      kind create cluster --config /vagrant/kind-config.yaml
+      kubectl apply -f /vagrant/drupal-deployment.yaml
+      kubectl apply -f /vagrant/mysql-deployment.yaml
+    SHELL
+  end
+  
