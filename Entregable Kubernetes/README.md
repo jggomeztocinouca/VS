@@ -26,6 +26,28 @@ Necesitamos un archivo de configuración para el despliegue de Drupal.
 
 ```yaml
 # drupal.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: drupal
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: drupal-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -41,10 +63,26 @@ spec:
         app: drupal
     spec:
       containers:
-      - name: drupal
-        image: drupal:latest
+      - image: drupal:latest
+        name: drupal
         ports:
         - containerPort: 80
+          name: drupal
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+        volumeMounts:
+        - name: drupal-persistent-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: drupal-persistent-storage
+        persistentVolumeClaim:
+          claimName: drupal-pv-claim
+
 ```
 
 Luego, ejecutamos el siguiente comando para desplegar Drupal:
@@ -58,28 +96,66 @@ Necesitamos un archivo de configuración para el despliegue de MySQL.
 
 ```yaml
 # mysql.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: mysql
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
         app: mysql
     spec:
       containers:
-      - name: mysql
-        image: mysql:5.7
+      - image: mysql:5.6
+        name: mysql
         env:
         - name: MYSQL_ROOT_PASSWORD
-          value: password
+          value: root
         ports:
         - containerPort: 3306
+          name: mysql
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "100m"
+            memory: "512Mi"
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+
 ```
 
 Luego, ejecutamos el siguiente comando para desplegar MySQL:
@@ -90,79 +166,14 @@ kubectl apply -f mysql.yaml
 
 Para conectar Drupal a MySQL, necesitamos proporcionar la información de la base de datos a Drupal. Esto se puede hacer a través de variables de entorno o un archivo de configuración.
 
-## Usar volúmenes persistentes
-Para usar volúmenes persistentes, necesitaremos crear objetos PersistentVolume y PersistentVolumeClaim en Kubernetes.
-
-```yaml
-# persistent-volume.yaml
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: pv-volume
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: manual
-  local:
-    path: /path/to/your/local/directory
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/hostname
-          operator: In
-          values:
-          - your-node-name
----
-# persistent-volume-claim.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: pv-claim
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-```
-
-Luego, montamos estos volúmenes en tus despliegues de Drupal y MySQL.
-
 ## Modificar el despliegue de Drupal para tener dos réplicas
 Simplemente cambiamos el campo replicas del archivo de despliegue de Drupal a 2.
-
-```yaml
-# drupal2.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: drupal
-spec:
-  replicas: 2  # Cambia esta línea
-  selector:
-    matchLabels:
-      app: drupal
-  template:
-    metadata:
-      labels:
-        app: drupal
-    spec:
-      containers:
-      - name: drupal
-        image: drupal:latest
-        ports:
-        - containerPort: 80
 ```
 
 Luego, aplicamos este cambio con el siguiente comando:
 
 ```
-kubectl apply -f drupal2.yaml
+kubectl apply -f drupal.yaml
 ```
 
 ## Usar un Vagrantfile para crear una máquina virtual
