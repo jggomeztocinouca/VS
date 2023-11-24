@@ -1,0 +1,50 @@
+Vagrant.configure("2") do |config|
+    # Configuración de la máquina virtual
+    config.vm.box = "ubuntu/bionic64"
+    config.vm.network "private_network", ip: "192.168.33.10"
+    config.vm.network "forwarded_port", guest: 8085, host: 8085
+
+     # Copiar archivos de configuración de Kubernetes
+    config.vm.provision "file", source: "../Cluster/kind-config.yaml", destination: "kind-config.yaml"
+    config.vm.provision "file", source: "../Cluster/mysql-persistent-volumes.yaml", destination: "mysql-persistent-volumes.yaml"
+    config.vm.provision "file", source: "../Cluster/drupal-persistent-volumes.yaml", destination: "drupal-persistent-volumes.yaml"
+    config.vm.provision "file", source: "../Cluster/mysql-deployment.yaml", destination: "mysql-deployment.yaml"
+    config.vm.provision "file", source: "../Cluster/mysql-sv.yaml", destination: "mysql-sv.yaml"
+    config.vm.provision "file", source: "../Cluster/drupal-deployment.yaml", destination: "drupal-deployment.yaml"
+    config.vm.provision "file", source: "../Cluster/drupal-sv.yaml", destination: "drupal-sv.yaml"
+
+    # Configuración de provisionamiento
+    config.vm.provision "shell", inline: <<-SHELL
+        # Actualizar repositorios
+        sudo apt-get update
+
+        # Instalar Docker
+        sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+        sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+        sudo apt-get update
+        sudo apt-get install -y docker-ce
+
+        # Instalar Kind
+        # For AMD64 / x86_64
+        [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-$(uname)-amd64
+        chmod +x ./kind
+        sudo mv ./kind /usr/local/bin/kind
+
+        # Instalar Kubectl
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+        # Crear cluster de Kubernetes
+        kind create cluster --config kind-config.yaml
+
+        # Aplicar configuraciones de Kubernetes
+        kubectl apply -f drupal-persistent-volumes.yaml
+        kubectl apply -f mysql-persistent-volumes.yaml
+        kubectl apply -f mysql-deployment.yaml
+        kubectl apply -f mysql-sv.yaml
+        kubectl apply -f drupal-deployment.yaml
+        kubectl apply -f drupal-sv.yaml
+    SHELL
+end
+  
