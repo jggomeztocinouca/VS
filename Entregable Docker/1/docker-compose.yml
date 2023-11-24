@@ -1,0 +1,26 @@
+# Definición del volumen compartido
+volumes:
+  volumenCompartido:
+    # Crea un volumen compartido
+
+    # Definición de los contenedores
+services:
+  # Contenedor para Drupal
+  drupal:
+    image: drupal
+    ports:
+      - "81:80" # host : contenedor
+    volumes:
+      # Volumen que usa el contenedor
+      - volumenCompartido:/compartido # El directorio compartido es común a ambos contenedores
+
+  # Contenedor para MySQL
+  mysql:
+    image: mysql
+    environment:
+      # El usuario por defecto es 'root'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: drupal # Nombre de la BD a crear
+    volumes:
+      # Volumen que usa el contenedor
+      - volumenCompartido:/compartido # El directorio compartido es común a ambos contenedores

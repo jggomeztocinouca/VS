@@ -1,56 +1,26 @@
-apiVersion: v1
-kind: Service
+apiVersion: apps/v1 # Versión de este tipo de recurso (apps/v1)
+kind: Deployment # Tipo de recurso (Deployment)
 metadata:
-  name: drupal
-spec:
-  ports:
-  - port: 80
-  selector:
-    app: drupal
-  type: LoadBalancer
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: drupal-pv-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: drupal
+ name: drupal # Nombre de este recurso específico
 spec:
   replicas: 1
   selector:
-    matchLabels:
+    matchLabels: # selecciona aquellos Pods con una etiqueta (app:drupal) para que pertenezcan a este Deployment
       app: drupal
   template:
     metadata:
-      labels:
+      labels: # Define una etiqueta (drupal) para los Pods que envuelven tu contenedor
         app: drupal
     spec:
       containers:
-      - image: drupal:latest
-        name: drupal
+      - name: drupal # Nombre para el contenedor (drupal)
+        image: drupal:latest # Nombre de la imagen Docker a usar (drupal:latest)
         ports:
-        - containerPort: 80
-          name: drupal
-        resources:
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-          requests:
-            cpu: "100m"
-            memory: "256Mi"
+          - containerPort: 80 # Puerto en el que exponemos el contenedor
         volumeMounts:
-        - name: drupal-persistent-storage
-          mountPath: /var/www/html
-      volumes:
-      - name: drupal-persistent-storage
-        persistentVolumeClaim:
-          claimName: drupal-pv-claim
+          - name: drupal-persistent-storage # Define el nombre del volumen
+            mountPath: /drupal # Especifica directorio de montaje
+      volumes: 
+        - name: drupal-persistent-storage # Define el nombre del volumen
+          persistentVolumeClaim:
+            claimName: drupal-pvc-claim # Define el nombre que se utilizará para solicitar un volumen persistente del cluster de Kubernetes

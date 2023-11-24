@@ -1,8 +1,9 @@
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
+# Creación de un cluster con un mapeo de puertos personalizado.
+kind: Cluster # Tipo de archivo de configuración (Cluster)
+apiVersion: kind.x-k8s.io/v1alpha4 # Versión de la API de Kubernetes a utilizar
+nodes: # Nodos que contiene el cluster
 - role: control-plane
   extraPortMappings:
-  - containerPort: 80
-    hostPort: 8085
-    protocol: TCP
+  - containerPort: 30080 # Se mapean los puertos dentro del cluster a uno de nuestro host
+    hostPort: 8085 # Mapeo al host
+    protocol: TCP # Protocolo usado

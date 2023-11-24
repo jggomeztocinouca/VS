@@ -1,0 +1,29 @@
+# Definición de redes
+networks:
+  redDocker:
+    # Define la red redDocker
+
+    # Definición de los contenedores
+services:
+  # Contenedor para MariaDB
+  mariadb:
+    image: mariadb
+    environment:
+      # El usuario por defecto es 'root'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress
+    networks:
+      - redDocker # Utiliza la red redDocker
+
+  # Contenedor para WordPress
+  wordpress:
+    image: wordpress
+    ports:
+      - "82:80" # host : contenedor
+    environment:
+      WORDPRESS_DB_HOST: mariadb # Nombre del servicio de la base de datos
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: root
+      WORDPRESS_DB_NAME: wordpress # Nombre de la BD a usar
+    networks:
+      - redDocker # Utiliza la red redDocker

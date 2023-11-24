@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim # Indica que es un recurso de tipo volumen persistente
+metadata:
+  name: drupal-pvc-claim # Define el nombre del volumen persistente
+spec:
+  accessModes:
+    - ReadWriteOnce # Define los modos de acceso al volumen
+  resources:
+    requests:
+      storage: 256Mi # Define el tamaño del volumen
