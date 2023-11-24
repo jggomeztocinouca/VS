@@ -168,7 +168,6 @@ Para conectar Drupal a MySQL, necesitamos proporcionar la información de la bas
 
 ## Modificar el despliegue de Drupal para tener dos réplicas
 Simplemente cambiamos el campo replicas del archivo de despliegue de Drupal a 2.
-```
 
 Luego, aplicamos este cambio con el siguiente comando:
 
@@ -179,7 +178,6 @@ kubectl apply -f drupal.yaml
 ## Usar un Vagrantfile para crear una máquina virtual
 
 ```
-# Vagrantfile
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/bionic64"
   config.vm.network "forwarded_port", guest: 8085, host: 8085
@@ -195,4 +193,5 @@ Vagrant.configure("2") do |config|
   SHELL
 end
 ```
+
 Este Vagrantfile crea una máquina virtual Ubuntu, instala Docker y kind, y luego crea el cluster de kind y despliega Drupal y MySQL.
