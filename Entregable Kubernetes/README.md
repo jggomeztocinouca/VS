@@ -178,7 +178,7 @@ kubectl apply -f drupal.yaml
 
 ## Usar un Vagrantfile para crear una máquina virtual
 
-```Vagrantfile
+```
 # Vagrantfile
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/bionic64"
