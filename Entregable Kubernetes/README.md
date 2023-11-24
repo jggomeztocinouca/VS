@@ -1,197 +1,27 @@
 # Despliegue de aplicaciones en Kubernetes
-Este documento describe el proceso de creación de un cluster de Kubernetes y despliegue de una aplicación de Drupal con MySQL utilizando archivos de configuración yaml.
+Este documento describe el proceso de creación de un clúster de Kubernetes y el despliegue de una aplicación Drupal con MySQL en él. Se utilizan archivos de configuración YAML para crear los recursos necesarios en Kubernetes y un archivo Vagrantfile para crear una máquina virtual donde se crea el clúster.
 
-## Crear un cluster de kind con un mapeo de puertos personalizado
-Primero, necesitamos un archivo de configuración para el cluster de kind:
-```yaml
-# kind-config.yaml
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  extraPortMappings:
-  - containerPort: 8085
-    hostPort: 8085
-    listenAddress: "0.0.0.0"
-```
+## Creación del clúster de Kubernetes
+Para crear el clúster de Kubernetes, se utiliza la herramienta Kind (Kubernetes in Docker). Kind permite ejecutar clústeres de Kubernetes locales utilizando Docker como “nodos”. El clúster se crea con un mapeo de puertos personalizado que apunta al puerto 8085 de la máquina local. Esto se especifica en el archivo de configuración kind-config.yaml.
 
-Luego, ejecutamos el siguiente comando para crear el cluster:
+## Drupal
+### Despliegue de la aplicación Drupal
+La aplicación Drupal se despliega en el clúster de Kubernetes utilizando un archivo de configuración YAML (drupal-deployment.yaml). Este archivo define un recurso de Despliegue que crea y gestiona un conjunto de réplicas de Pods. Cada Pod ejecuta un contenedor con la imagen Docker de Drupal.
 
-```
-kind create cluster --config kind-config.yaml
-```
+El Despliegue también especifica un volumen persistente para almacenar los datos de la aplicación Drupal. Esto se hace utilizando un recurso de PersistentVolumeClaim (drupal-persistent-volumes.yaml), que solicita un volumen persistente de un tamaño específico del clúster de Kubernetes.
 
-## Desplegar una aplicación de Drupal
-Necesitamos un archivo de configuración para el despliegue de Drupal.
+## MySQL
+### Despliegue de la base de datos MySQL
+La base de datos MySQL también se despliega en el clúster de Kubernetes utilizando un archivo de configuración YAML (mysql-deployment.yaml). Al igual que con la aplicación Drupal, este archivo define un recurso de Despliegue que crea y gestiona un conjunto de réplicas de Pods. Cada Pod ejecuta un contenedor con la imagen Docker de MySQL.
 
-```yaml
-# drupal.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: drupal
-spec:
-  ports:
-  - port: 80
-  selector:
-    app: drupal
-  type: LoadBalancer
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: drupal-pv-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: drupal
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: drupal
-  template:
-    metadata:
-      labels:
-        app: drupal
-    spec:
-      containers:
-      - image: drupal:latest
-        name: drupal
-        ports:
-        - containerPort: 80
-          name: drupal
-        resources:
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-          requests:
-            cpu: "100m"
-            memory: "256Mi"
-        volumeMounts:
-        - name: drupal-persistent-storage
-          mountPath: /var/www/html
-      volumes:
-      - name: drupal-persistent-storage
-        persistentVolumeClaim:
-          claimName: drupal-pv-claim
+El Despliegue también especifica un volumen persistente para almacenar los datos de la base de datos MySQL. Esto se hace utilizando un recurso de PersistentVolumeClaim (mysql-persistent-volumes.yaml), que solicita un volumen persistente de un tamaño específico del clúster de Kubernetes.
 
-```
+## Creación de la máquina virtual
+Para crear la máquina virtual donde se crea el clúster de Kubernetes, se utiliza Vagrant. Vagrant es una herramienta que permite crear y gestionar máquinas virtuales de manera sencilla y consistente.
 
-Luego, ejecutamos el siguiente comando para desplegar Drupal:
+El archivo Vagrantfile define la configuración de la máquina virtual. En este caso, se utiliza una imagen de Ubuntu 18.04 (Bionic Beaver) como base para la máquina virtual. La máquina virtual se configura con una red privada y un reenvío de puertos para permitir el acceso a la aplicación Drupal desde la máquina host.
 
-```
-kubectl apply -f drupal.yaml
-```
+El archivo Vagrantfile también define un script de provisionamiento que se ejecuta cuando se crea la máquina virtual. Este script instala Docker, Kind y kubectl en la máquina virtual, copia los archivos de configuración de Kubernetes a la máquina virtual y luego aplica estas configuraciones para desplegar los servicios en Kubernetes.
 
-## Conectar Drupal a una base de datos MySQL
-Necesitamos un archivo de configuración para el despliegue de MySQL.
-
-```yaml
-# mysql.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysql
-spec:
-  ports:
-  - port: 3306
-  selector:
-    app: mysql
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mysql-pv-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: mysql
-spec:
-  selector:
-    matchLabels:
-      app: mysql
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: mysql
-    spec:
-      containers:
-      - image: mysql:5.6
-        name: mysql
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: root
-        ports:
-        - containerPort: 3306
-          name: mysql
-        resources:
-          limits:
-            cpu: "1"
-            memory: "1Gi"
-          requests:
-            cpu: "100m"
-            memory: "512Mi"
-        volumeMounts:
-        - name: mysql-persistent-storage
-          mountPath: /var/lib/mysql
-      volumes:
-      - name: mysql-persistent-storage
-        persistentVolumeClaim:
-          claimName: mysql-pv-claim
-
-```
-
-Luego, ejecutamos el siguiente comando para desplegar MySQL:
-
-```
-kubectl apply -f mysql.yaml
-```
-
-Para conectar Drupal a MySQL, necesitamos proporcionar la información de la base de datos a Drupal. Esto se puede hacer a través de variables de entorno o un archivo de configuración.
-
-## Modificar el despliegue de Drupal para tener dos réplicas
-Simplemente cambiamos el campo replicas del archivo de despliegue de Drupal a 2.
-
-Luego, aplicamos este cambio con el siguiente comando:
-
-```
-kubectl apply -f drupal.yaml
-```
-
-## Usar un Vagrantfile para crear una máquina virtual
-
-```
-Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/bionic64"
-  config.vm.network "forwarded_port", guest: 8085, host: 8085
-  config.vm.provision "shell", inline: <<-SHELL
-    sudo apt-get update
-    sudo apt-get install -y docker.io
-    curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
-    chmod +x ./kind
-    sudo mv ./kind /usr/local/bin/kind
-    kind create cluster --config /vagrant/kind-config.yaml
-    kubectl apply -f /vagrant/drupal-deployment.yaml
-    kubectl apply -f /vagrant/mysql-deployment.yaml
-  SHELL
-end
-```
-
-Este Vagrantfile crea una máquina virtual Ubuntu, instala Docker y kind, y luego crea el cluster de kind y despliega Drupal y MySQL.
+## Conclusion
+Este proyecto demuestra cómo se puede utilizar Kubernetes para desplegar una aplicación Drupal con una base de datos MySQL en una máquina virtual. Se utilizan archivos de configuración YAML para definir los recursos de Kubernetes y un archivo Vagrantfile para crear y configurar la máquina virtual. Los volúmenes persistentes se utilizan para almacenar los datos de la aplicación y de la base de datos, lo que permite que los datos persistan incluso cuando los Pods se reinician o se eliminan. El reenvío de puertos permite acceder a la aplicación Drupal desde la máquina host.
