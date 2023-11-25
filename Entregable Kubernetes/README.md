@@ -1,5 +1,7 @@
 # Despliegue de aplicaciones en Kubernetes
-Este documento describe el proceso de creación de un clúster de Kubernetes y el despliegue de una aplicación Drupal con MySQL en él. Se utilizan archivos de configuración YAML para crear los recursos necesarios en Kubernetes y un archivo Vagrantfile para crear una máquina virtual donde se crea el clúster.
+Este documento describe el proceso de creación de un clúster de Kubernetes y el despliegue de una aplicación Drupal con MySQL en él. 
+
+Se utilizan archivos de configuración YAML para crear los recursos necesarios en Kubernetes y un archivo Vagrantfile para crear una máquina virtual donde se crea el clúster.
 
 ## Creación del clúster de Kubernetes
 Para crear el clúster de Kubernetes, se utiliza la herramienta Kind (Kubernetes in Docker). Kind permite ejecutar clústeres de Kubernetes locales utilizando Docker como “nodos”. El clúster se crea con un mapeo de puertos personalizado que apunta al puerto 8085 de la máquina local. Esto se especifica en el archivo de configuración kind-config.yaml.
