@@ -46,4 +46,3 @@ Vagrant.configure("2") do |config|
         kubectl apply -f drupal-sv.yaml
     SHELL
 end
-  
