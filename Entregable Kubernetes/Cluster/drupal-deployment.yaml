@@ -23,4 +23,5 @@ spec:
       volumes: 
         - name: drupal-persistent-storage # Define el nombre del volumen
           persistentVolumeClaim:
-            claimName: drupal-pvc-claim # Define el nombre que se utilizará para solicitar un volumen persistente del cluster de Kubernetes
+            claimName: drupal-pvc-claim # Define el nombre que se utilizará 
+            # para solicitar un volumen persistente del cluster de Kubernetes
