@@ -5,7 +5,7 @@ metadata: # Metadatos del recurso
 spec: 
   selector: # El Servicio (Service) selecciona los Pods que se expondrán en función de sus etiquetas.
     app: mysql # Deben coincidir con las especificadas para los Pods en el recurso de Despliegue (en nuestro caso drupal).
-  type: ClusterIP # Puerto del Nodo
+  type: ClusterIP # Tipo del Nodo
   ports:
     - name: http # Método de solicitud
       port: 3306
