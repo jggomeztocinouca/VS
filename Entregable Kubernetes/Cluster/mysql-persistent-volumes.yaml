@@ -7,4 +7,4 @@ spec:
     - ReadWriteOnce # Define los modos de acceso al volumen
   resources:
     requests:
-      storage: 256Mi # Define el tamaño del volumen
+      storage: 256Mi # Define el tamaño del volumen (MibiBytes)
