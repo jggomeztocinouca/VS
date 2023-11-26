@@ -86,6 +86,43 @@ spec:
             claimName: drupal-pvc-claim # Define el nombre que se utilizará para solicitar un volumen persistente del cluster de Kubernetes
 ```
 El Despliegue también especifica un volumen persistente para almacenar los datos de la aplicación _Drupal_. Esto se hace utilizando un recurso de _PersistentVolumeClaim_ (```drupal-persistent-volumes.yaml```), que solicita un volumen persistente de un tamaño específico del clúster de Kubernetes.
+
+#### Escalado del despliegue
+Si quisieramos tener redundancia para conseguir tolerancia a fallos, podríamos establecer un mayor número de replicas. Esto se conseguiría modificando la siguiente línea:
+```yaml
+replicas: 1 --> replicas: 2
+```
+
+Obteniendo el siguiente archivo modificado:
+```yaml
+apiVersion: apps/v1 # Versión de este tipo de recurso (apps/v1)
+kind: Deployment # Tipo de recurso (Deployment)
+metadata:
+ name: drupal # Nombre de este recurso específico
+spec:
+  replicas: 2
+  selector:
+    matchLabels: # selecciona aquellos Pods con una etiqueta (app:drupal) para que pertenezcan a este Deployment
+      app: drupal
+  template:
+    metadata:
+      labels: # Define una etiqueta (drupal) para los Pods que envuelven tu contenedor
+        app: drupal
+    spec:
+      containers:
+      - name: drupal # Nombre para el contenedor (drupal)
+        image: drupal:latest # Nombre de la imagen Docker a usar (drupal:latest)
+        ports:
+          - containerPort: 80 # Puerto en el que exponemos el contenedor
+        volumeMounts:
+          - name: drupal-persistent-storage # Define el nombre del volumen
+            mountPath: /drupal # Especifica directorio de montaje
+      volumes: 
+        - name: drupal-persistent-storage # Define el nombre del volumen
+          persistentVolumeClaim:
+            claimName: drupal-pvc-claim # Define el nombre que se utilizará para solicitar un volumen persistente del cluster de Kubernetes
+```
+
 ### Service
 Tras el despliegue en el cluster, se define un recurso de _Kubernetes_, un _Service_, para la aplicacion de _Drupal_. El cual actuará como un punto de entrada para las solicitudes de red y las redirige al Pod. Este servicio se encuentra en ```drupal-sv.yaml```.
 
