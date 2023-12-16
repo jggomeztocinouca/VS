@@ -1,14 +1,9 @@
-import jetbrains.buildServer.configs.kotlin.v2023_11.*
-import jetbrains.buildServer.configs.kotlin.buildSteps.dockerCommand
-import jetbrains.buildServer.configs.kotlin.buildSteps.script
+import jetbrains.buildServer.configs.kotlin.*
 
 version = "2023.11"
 
 project {
     buildType {
-        id("DockerPipeline")
-        name = "Docker Pipeline"
-
         steps {
             dockerCommand {
                 name = "Construir contenedor Docker"
