@@ -1,34 +1,44 @@
-import jetbrains.buildServer.configs.kotlin.v2019_2.*
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dockerCommand
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
+import jetbrains.buildServer.configs.kotlin.v2023_11.*
+import jetbrains.buildServer.configs.kotlin.buildSteps.dockerCommand
+import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
 version = "2023.11"
 
 project {
     buildType {
-        name = "Ejemplo CI/CD Pipeline con Docker"
+        id("DockerPipeline")
+        name = "Docker Pipeline"
 
         steps {
             dockerCommand {
-                name = "Crear contenedor"
-                commandType = customScript {
-                    scriptContent = "docker run -d --name VS node:21-alpine3.18"
+                name = "Construir contenedor Docker"
+                commandType = build {
+                    source = content {
+                        content = "FROM node:21-alpine3.18"
+                    }
+                    namesAndTags = "VS"
                 }
             }
+
             script {
-                name = "Test de dependencias"
-                scriptContent = "./scripts/test.sh"
-                executionMode = BuildStep.ExecutionMode.RUN_ON_SUCCESS
+                name = "Ejecutar test.sh en contenedor"
+                scriptContent = """
+                    docker run --rm -v ${'$'}PWD/scripts:/scripts VS /scripts/test.sh
+                """.trimIndent()
             }
+
             script {
-                name = "Detener servicio"
-                scriptContent = "./scripts/stop.sh"
-                executionMode = BuildStep.ExecutionMode.RUN_ON_SUCCESS
+                name = "Detener contenedor"
+                scriptContent = """
+                    ./scripts/stop.sh
+                """.trimIndent()
             }
+
             script {
-                name = "Eliminar contenedor"
-                scriptContent = "./scripts/delete.sh"
-                executionMode = BuildStep.ExecutionMode.RUN_ON_SUCCESS
+                name = "Eliminar contenedor y datos"
+                scriptContent = """
+                    ./scripts/delete.sh
+                """.trimIndent()
             }
         }
     }
