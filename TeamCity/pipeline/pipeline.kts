@@ -5,36 +5,23 @@ version = "2023.11"
 project {
     buildType {
         steps {
-            dockerCommand {
-                name = "Construir contenedor Docker"
-                commandType = build {
-                    source = content {
-                        content = "FROM node:21-alpine3.18"
-                    }
-                    namesAndTags = "VS"
-                }
+            dockerCompose {
+                name = "Node contenerizado"
+                file = "docker-compose.yml"
             }
-
-            script {
-                name = "Ejecutar test.sh en contenedor"
-                scriptContent = """
-                    ./scripts/test.sh
-                """.trimIndent()
-            }
-
-            script {
-                name = "Detener contenedor"
-                scriptContent = """
-                    ./scripts/stop.sh
-                """.trimIndent()
-            }
-
-            script {
-                name = "Eliminar contenedor y datos"
-                scriptContent = """
-                    ./scripts/delete.sh
-                """.trimIndent()
-            }
+        }
+        script {
+            name "Test de dependencias"
+            // El contenedor se llama VS
+            scriptContent = "docker exec VS npm test"
+        }
+        script {
+            name "Detener contenedor"
+            scriptContent = "docker stop VS"
+        }
+        script {
+            name "Eliminar contenedor"
+            scriptContent = "docker rm VS"
         }
     }
 }
