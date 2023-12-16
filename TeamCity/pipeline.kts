@@ -1,33 +1,32 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dockerCommand
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
+
+version = "2021.1"
 
 project {
     buildType {
         name = "Ejemplo CI/CD Pipeline con Docker"
-        vcs {
-            root(DslContext.settingsRoot)
-        }
 
         steps {
             dockerCommand {
-                name = "Crear contenedor"
-                commandType = customScript {
-                    scriptContent = "docker run -d --name VS node:21-alpine3.18"
+                name = "Crear y ejecutar contenedor 'VS'"
+                commandType = run {
+                    image = "node:21-alpine3.18"
+                    args = "--name VS"
                 }
             }
-            dockerWrapper {
+            script {
                 name = "Test de dependencias"
-                command = "./scripts/test.sh"
-                containerName = "VS"
+                scriptContent = "./scripts/test.sh"
             }
-            dockerWrapper {
+            script {
                 name = "Detener servicio"
-                command = "./scripts/stop.sh"
-                containerName = "VS"
+                scriptContent = "./scripts/stop.sh"
             }
-            dockerWrapper {
+            script {
                 name = "Eliminar contenedor"
-                command = "./scripts/delete.sh"
-                containerName = "VS"
+                scriptContent = "./scripts/delete.sh"
             }
         }
     }
