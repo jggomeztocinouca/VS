@@ -23,7 +23,7 @@ project {
             script {
                 name = "Ejecutar test.sh en contenedor"
                 scriptContent = """
-                    docker run --rm -v ${'$'}PWD/scripts:/scripts VS /scripts/test.sh
+                    ./scripts/test.sh
                 """.trimIndent()
             }
 
