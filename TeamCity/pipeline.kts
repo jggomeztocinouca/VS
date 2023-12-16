@@ -1,3 +1,5 @@
+import jetbrains.buildServer.configs.kotlin.v2019_2.*
+
 project {
     buildType {
         name = "Ejemplo CI/CD Pipeline con Docker"
