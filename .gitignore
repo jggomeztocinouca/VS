@@ -3,3 +3,4 @@ TeamCity/Data
 TeamCity/Logs
 TeamCity/AgentBuild
 .idea
+logback.log
