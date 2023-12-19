@@ -1,6 +1,0 @@
-services:
-  VS:
-    image: node:21
-    container_name: VS
-    ports:
-      - "3000:3000"
