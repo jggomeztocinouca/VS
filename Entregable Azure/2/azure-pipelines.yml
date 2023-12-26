@@ -11,7 +11,7 @@ steps:
     SonarQube: 'SonarQube'
     scannerMode: 'CLI'
     configMode: 'manual'
-    cliProjectKey: 'VS_Entregable_4.1_VS_Entregable_4.2_AYymN3HQ6R_ge7LgpJDR'
+    cliProjectKey: 'VS_Entregable_4.1_VS_Entregable_4.2_AYynlZL0hTQxrqXyNLiE'
     cliProjectName: 'VS Entregable 4.2'
     cliProjectVersion: 1.0
     cliSources: .

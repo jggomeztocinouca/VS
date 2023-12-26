@@ -275,6 +275,20 @@ Este pipeline realiza las siguientes operaciones:
    4. **Publicación de los resultados**:  
       Esta tarea publica los resultados del análisis en _SonarQube_, visibles desde la interfaz web de la herramienta.
 
+### Resultados
+
+#### Pipeline
+
+Como se puede observar en la siguiente imagen, el pipeline se ha ejecutado correctamente:
+
+![Pipeline](https://cdn.discordapp.com/attachments/810110258731024384/1189289216417468606/image.png?ex=659d9ee5&is=658b29e5&hm=62b923196a1ce9e1141f0b1be715eaf76fdcf01a85989688f1d7f93a9122cb04&)
+
+#### SonarQube
+
+En la siguiente imagen se puede observar el resultado del análisis de código realizado por _SonarQube_, mediante su interfaz web:
+
+![SonarQube](https://cdn.discordapp.com/attachments/810110258731024384/1189288864997720156/image.png?ex=659d9e91&is=658b2991&hm=37a26a3d15f0860ea84cb9c0ccc3f3d3af527b818fec574de882333398a62695&)
+
 ---
 
 ## Parte 2: Pipeline de Azure con Terraform
@@ -390,6 +404,20 @@ Este pipeline realiza las siguientes operaciones:
       Esta tarea ejecuta el comando `sonar-scanner` para realizar el análisis de código y detectar posibles errores y/o vulnerabilidades en los contenedores desplegados.
    7. **Publicación de los resultados**:  
       Esta tarea publica los resultados del análisis en _SonarQube_, visibles desde la interfaz web de la herramienta.
+
+### Resultados
+
+#### Pipeline
+
+Como se puede observar en la siguiente imagen, el pipeline se ha ejecutado correctamente:
+
+![Pipeline](https://cdn.discordapp.com/attachments/810110258731024384/1189289300416811108/image.png?ex=659d9ef9&is=658b29f9&hm=a14a02e11d9ca3b7cc49c8256633a6eb1666c781de5dd819892d9fffcafcc09f&)
+
+#### SonarQube
+
+En la siguiente imagen se puede observar el resultado del análisis de código realizado por _SonarQube_, mediante su interfaz web:
+
+![SonarQube](https://cdn.discordapp.com/attachments/810110258731024384/1189289056979406940/image.png?ex=659d9ebf&is=658b29bf&hm=2501e9b2d89bdb244aec3bd3838c2f5963fa91bc83c4c617807db89880055dba&)
 
 ---
 
