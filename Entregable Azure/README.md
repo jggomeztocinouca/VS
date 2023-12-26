@@ -2,6 +2,8 @@
 
 #### Francisco Mercado, Jesús Gómez
 
+---
+
 ## Pre-requisitos
 
 Para las dos primeras partes del entregable, se hace uso de la herramienta [_SonarQube_](https://www.sonarsource.com/products/sonarqube/), por lo que deberemos preparar un entorno para su ejecución.
@@ -17,65 +19,93 @@ Para ello, hemos seguido los siguientes pasos:
        - El único item con el que debemos tener cuidado es el tamaño de la máquina virtual a crear, ya que _SonarQube_ necesita de, al menos, 4 GiB para su correcto funcionamiento.
 2.  **Configuración de red de la máquina virtual**  
     Debemos establecer una regla de puerto de entrada para poder acceder a la interfaz web de _SonarQube_.
-    Para ello: 1. En el portal de _Azure_, dentro de la sección de máquinas virtuales, seleccione la máquina virtual creada en el paso anterior. 2. En el menú de la parte izquierda, acceda al apartado de _Network settings_. 3. Haga click _Create port rule_ y, en el desplegable que aparece, seleccione _Inbound port rule_. 4. Configure la regla de la siguiente manera: - _Source_: Any - _Source port ranges_: \* - _Destination_: Any - _Service_: Custom - _Destination port ranges_: 9000 - _Protocol_: TCP - _Action_: Allow - _Priority_: 320 - _Name_: SonarQube
+    Para ello:
+
+    1. En el portal de _Azure_, dentro de la sección de máquinas virtuales, seleccione la máquina virtual creada en el paso anterior.
+    2. En el menú de la parte izquierda, acceda al apartado de _Network settings_.
+    3. Haga click _Create port rule_ y, en el desplegable que aparece, seleccione _Inbound port rule_.
+    4. Configure la regla de la siguiente manera:
+       - _Source_: Any
+       - _Source port ranges_: \*
+       - _Destination_: Any
+       - _Service_: Custom
+       - _Destination port ranges_: 9000
+       - _Protocol_: TCP
+       - _Action_: Allow
+       - _Priority_: 320
+       - _Name_: SonarQube
 
 3.  **Provisionamiento de dependencias, instalación y despliegue de _SonarQube_**  
-    Una vez creada y configurada la máquina virtual, sobre la que se ejecutará _SonarQube_, debe conectarse a ella para instalar las dependencias necesarias y crear los archivos de configuración necesarios para su correcto funcionamiento. 1. Vuelva a la sección de _Virtual Machines_ del portal de _Azure_ y seleccione la máquina virtual sobre la que estamos trabajando. 2. En el menú de la parte izquierda, acceda al apartado de _Connect_. 3. Seleccione la opción de _SSH using Azure CLI_ y conectese a la máquina virtual. 4. Una vez conectado, siga los siguientes pasos para instalar las dependencias necesarias y crear los archivos de configuración: 1. Ejecute el comando: `sudo vi /etc/sysctl.conf` para editar el archivo de configuración del sistema. 2. Añada las siguientes líneas al final del archivo:
-    `                vm.max_map_count=262144 
-                fs.file-max=65536
-           `
-    Esto establece el número máximo de archivos que puede tener abiertos el sistema y el número máximo de áreas de memoria compartida.
+    Una vez creada y configurada la máquina virtual, sobre la que se ejecutará _SonarQube_, debe conectarse a ella para instalar las dependencias necesarias y crear los archivos de configuración necesarios para su correcto funcionamiento.
 
-            3. Ejecute el comando: ```sudo sysctl -p``` para aplicar los cambios realizados.
-            4. Ejecute el comando ```sudo hostnamectl set-hostname SonarQube``` para cambiar el nombre de la máquina virtual.
-            5. Ejecute el comando ```sudo apt-get update``` para actualizar los repositorios de _apt_.
-            6. Ejecute el comando ```sudo apt-get upgrade -y``` para actualizar los paquetes instalados.
-            7. Ejecute el comando ```sudo apt install docker-compose -y``` para instalar _docker-compose_.
-            8. Ejecute el comando ```sudo vi docker-compose.yml``` para crear el archivo de configuración de _docker-compose_, donde establecerá lo siguiente:
-                ```yaml
-                version: "3"
+    1. Vuelva a la sección de _Virtual Machines_ del portal de _Azure_ y seleccione la máquina virtual sobre la que estamos trabajando.
+    2. En el menú de la parte izquierda, acceda al apartado de _Connect_.
+    3. Seleccione la opción de _SSH using Azure CLI_ y conectese a la máquina virtual.
+    4. Una vez conectado, siga los siguientes pasos para instalar las dependencias necesarias y crear los archivos de configuración:
 
-                services:
-                sonarqube:
-                    image: sonarqube:community
-                    restart: unless-stopped
-                    depends_on:
-                    - db
-                    environment:
-                    SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
-                    SONAR_JDBC_USERNAME: sonar
-                    SONAR_JDBC_PASSWORD: sonar
-                    volumes:
-                    - sonarqube_data:/opt/sonarqube/data
-                    - sonarqube_extensions:/opt/sonarqube/extensions
-                    - sonarqube_logs:/opt/sonarqube/logs
-                    ports:
-                    - "9000:9000"
+       1. Ejecute el comando: `sudo vi /etc/sysctl.conf` para editar el archivo de configuración del sistema.
+       2. Añada las siguientes líneas al final del archivo:
 
-                db:
-                    image: postgres:12
-                    restart: unless-stopped
-                    environment:
-                    POSTGRES_USER: sonar
-                    POSTGRES_PASSWORD: sonar
-                    volumes:
-                    - postgresql:/var/lib/postgresql
-                    - postgresql_data:/var/lib/postgresql/data
+          ```
+              vm.max_map_count=262144
+              fs.file-max=65536
+          ```
 
-                volumes:
-                sonarqube_data:
-                sonarqube_extensions:
-                sonarqube_logs:
-                postgresql:
-                postgresql_data:
-                ```
-                Esto configurará un contenedor de _SonarQube_ y otro de _PostgreSQL_. Este servicio será accesible desde el puerto 9000 de la máquina virtual. Por esta razón, en el paso 2 de la configuración de red de la máquina virtual, se ha establecido una regla de puerto de entrada para dicho puerto.
+          Esto establece el número máximo de archivos que puede tener abiertos el sistema y el número máximo de áreas de memoria compartida.
 
-            9. Ejecute el comando ```sudo docker-compose up -d``` para iniciar los contenedores.
+       3. Ejecute el comando: `sudo sysctl -p` para aplicar los cambios realizados.
+       4. Ejecute el comando `sudo hostnamectl set-hostname SonarQube` para cambiar el nombre de la máquina virtual.
+       5. Ejecute el comando `sudo apt-get update` para actualizar los repositorios de _apt_.
+       6. Ejecute el comando `sudo apt-get upgrade -y` para actualizar los paquetes instalados.
+       7. Ejecute el comando `sudo apt install docker-compose -y` para instalar _docker-compose_.
+       8. Ejecute el comando `sudo vi docker-compose.yml` para crear el archivo de configuración de _docker-compose_, donde establecerá lo siguiente:
 
-        **Una vez completados estos pasos, _SonarQube_ estará disponible en la dirección IP pública de la máquina virtual, en el puerto 9000.**
-        - Para conocer la dirección IP pública, vuelva a la sección de _Virtual Machines_ del portal de _Azure_, seleccione la máquina virtual sobre la que estamos trabajando y podrá obtener dicha dirección.
-        - Para acceder a la interfaz web de _SonarQube_, abra un navegador web y acceda a la dirección IP pública de la máquina virtual, seguida del puerto 9000. Por ejemplo: ```http://ip_publica:9000```.
+          ```yaml
+          version: "3"
+
+          services:
+          sonarqube:
+            image: sonarqube:community
+            restart: unless-stopped
+            depends_on:
+              - db
+            environment:
+            SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+            SONAR_JDBC_USERNAME: sonar
+            SONAR_JDBC_PASSWORD: sonar
+            volumes:
+              - sonarqube_data:/opt/sonarqube/data
+              - sonarqube_extensions:/opt/sonarqube/extensions
+              - sonarqube_logs:/opt/sonarqube/logs
+            ports:
+              - "9000:9000"
+
+          db:
+            image: postgres:12
+            restart: unless-stopped
+            environment:
+            POSTGRES_USER: sonar
+            POSTGRES_PASSWORD: sonar
+            volumes:
+              - postgresql:/var/lib/postgresql
+              - postgresql_data:/var/lib/postgresql/data
+
+          volumes:
+          sonarqube_data:
+          sonarqube_extensions:
+          sonarqube_logs:
+          postgresql:
+          postgresql_data:
+          ```
+
+          Esto configurará un contenedor de _SonarQube_ y otro de _PostgreSQL_. Este servicio será accesible desde el puerto 9000 de la máquina virtual. Por esta razón, en el paso 2 de la configuración de red de la máquina virtual, se ha establecido una regla de puerto de entrada para dicho puerto.
+
+       9. Ejecute el comando `sudo docker-compose up -d` para iniciar los contenedores.
+
+       **Una vez completados estos pasos, _SonarQube_ estará disponible en la dirección IP pública de la máquina virtual, en el puerto 9000.**
+
+       - Para conocer la dirección IP pública, vuelva a la sección de _Virtual Machines_ del portal de _Azure_, seleccione la máquina virtual sobre la que estamos trabajando y podrá obtener dicha dirección.
+       - Para acceder a la interfaz web de _SonarQube_, abra un navegador web y acceda a la dirección IP pública de la máquina virtual, seguida del puerto 9000. Por ejemplo: `http://ip_publica:9000`.
 
 4.  **Creación de un token de autenticación de _Azure DevOps_ para _SonarQube_**
 
@@ -108,9 +138,20 @@ Para ello, hemos seguido los siguientes pasos:
     5. Copie el token generado y guárdelo en un lugar seguro, ya que no podrá volver a verlo. Esto será necesario para configurar la conexión de servicio en _Azure DevOps_ en el siguiente paso.
 
 7.  **Creación de una conexión de servicio a _SonarQube_**  
-    Para hacer uso de la herramienta que acaba de configurar en cualquier pipeline, es necesario crear una conexión de servicio para que podamos referenciarlas en los pipelines que se desarrolle. Siga estos pasos para crearla: 1. [Instale la herramienta](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarqube) en su entorno _Azure DevOps_. 1. Acceda al proyecto de _Azure DevOps_ que ha creado para el entregable. 2. En el menú de la parte izquierda, acceda al apartado de _Project settings_. 3. En el menú de la parte izquierda, acceda al apartado de _Service connections_. 4. Haga click en _New service connection_ y busque _SonarQube_. 6. Configure la conexión de la siguiente manera: - _Connection name_: SonarQube (este nombre será al que se referencie en los pipelines) - _Server URL_: http://ip*publica:9000 - \_Authentication token*: token*de_autenticacion (el generado en el paso 4 desde la interfaz web de \_SonarQube*)
+    Para hacer uso de la herramienta que acaba de configurar en cualquier pipeline, es necesario crear una conexión de servicio para que podamos referenciarlas en los pipelines que se desarrolle. Siga estos pasos para crearla:
+    1. [Instale la herramienta](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarqube) en su entorno _Azure DevOps_.
+    2. Acceda al proyecto de _Azure DevOps_ que ha creado para el entregable.
+    3. En el menú de la parte izquierda, acceda al apartado de _Project settings_.
+    4. En el menú de la parte izquierda, acceda al apartado de _Service connections_.
+    5. Haga click en _New service connection_ y busque _SonarQube_.
+    6. Configure la conexión de la siguiente manera:
+       - _Connection name_: SonarQube (este nombre será al que se referencie en los pipelines)
+       - _Server URL_: http://ip_publica:9000
+       - _Authentication token_: token*de_autenticacion (el generado en el paso 4 desde la interfaz web de \_SonarQube*)
 
 **Al completar estos pasos, ya tendrá configurada la herramienta _SonarQube_ en su entorno _Azure DevOps_ y podrá hacer uso de ella en los pipelines que desarrolle.**
+
+---
 
 ## Parte 1: Pipeline de Azure con Dockerfile y Docker-Compose
 
@@ -234,6 +275,8 @@ Este pipeline realiza las siguientes operaciones:
    4. **Publicación de los resultados**:  
       Esta tarea publica los resultados del análisis en _SonarQube_, visibles desde la interfaz web de la herramienta.
 
+---
+
 ## Parte 2: Pipeline de Azure con Terraform
 
 El objetivo de esta parte es desplegar un contenedor de _Nginx_ mediante un pipeline de _Azure_. Para ello, hemos creado un repositorio en _Azure DevOps_ con el siguiente contenido:
@@ -333,8 +376,12 @@ Este pipeline realiza las siguientes operaciones:
    2. **Instalación de .NET Core**:  
       Esta tarea instala la versión 3.1.x de _.NET Core_ en la máquina virtual de _Azure_.
    3. **Inicialización, Formateo y Validación de la configuración Terraform**:  
-      Esta tarea ejecuta los comandos necesarios para desplegar la infraestructura, configurada en el archivo de configuración Terraform, en un entorno de _Azure_. 1. Ejecuta el comando `az login` para iniciar sesión en _Azure_. Esto es necesario para poder ejecutar los comandos de _Terraform_, debido a la falta de permisos otorgados en la suscripción de _Azure_: _Azure for Students_.  
-       - La falta de permisos que presenta la suscripción _Azure for Students_ impide la automatización del despliegue, pero las opciones de autenticación, ya sea por Managed Identity o por Service Principal, requieren de permisos elevados. - Al ejecutar el comando `az login`, la terminal de despliegue nos mostrará un enlace para iniciar sesión en _Azure_ y, seguidamente, un código de autenticación. Deberemos acceder al enlace, introducir el código de autenticación y seleccionar la cuenta de _Azure_ con la que queremos iniciar sesión. 2. Ejecuta el comando `terraform init` para inicializar el directorio de trabajo de _Terraform_. 3. Ejecuta el comando `terraform fmt` para formatear el archivo de configuración de _Terraform_ a un formato legible y consistente. 4. Ejecuta el comando `terraform validate` para comprobar si el archivo de configuración de _Terraform_ presenta una estructura sintácticamente válida.
+      Esta tarea ejecuta los comandos necesarios para desplegar la infraestructura, configurada en el archivo de configuración Terraform, en un entorno de _Azure_.
+      1. Ejecuta el comando `az login` para iniciar sesión en _Azure_. Esto es necesario para poder ejecutar los comandos de _Terraform_, debido a la falta de permisos otorgados en la suscripción de _Azure_: _Azure for Students_.
+         - La falta de permisos que presenta la suscripción _Azure for Students_ impide la automatización del despliegue, pero las opciones de autenticación, ya sea por Managed Identity o por Service Principal, requieren de permisos elevados. - Al ejecutar el comando `az login`, la terminal de despliegue nos mostrará un enlace para iniciar sesión en _Azure_ y, seguidamente, un código de autenticación. Deberemos acceder al enlace, introducir el código de autenticación y seleccionar la cuenta de _Azure_ con la que queremos iniciar sesión.
+      2. Ejecuta el comando `terraform init` para inicializar el directorio de trabajo de _Terraform_.
+      3. Ejecuta el comando `terraform fmt` para formatear el archivo de configuración de _Terraform_ a un formato legible y consistente.
+      4. Ejecuta el comando `terraform validate` para comprobar si el archivo de configuración de _Terraform_ presenta una estructura sintácticamente válida.
    4. **Planificación de la infraestructura Terraform**:
       Esta tarea ejecuta el comando `terraform plan -out=tfplan` para planificar la creación de la infraestructura (lo cual resulta una buena práctica para comprender qué recursos se crearán o modificarán y cómo afectarán a la infraestructura.).
    5. **Despliegue de la infraestructura Terraform**:
@@ -344,4 +391,10 @@ Este pipeline realiza las siguientes operaciones:
    7. **Publicación de los resultados**:  
       Esta tarea publica los resultados del análisis en _SonarQube_, visibles desde la interfaz web de la herramienta.
 
-   ## Parte 3: Pipeline en GitLab
+---
+
+## Parte 3: Pipeline en GitLab
+
+---
+
+###### Jesús Gómez, Mercado Franciso
