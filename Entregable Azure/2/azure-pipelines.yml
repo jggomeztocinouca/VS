@@ -1,0 +1,46 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: SonarQubePrepare@5
+  displayName: 'Conexión con SonarQube'
+  inputs:
+    SonarQube: 'SonarQube'
+    scannerMode: 'CLI'
+    configMode: 'manual'
+    cliProjectKey: 'VS_Entregable_4.1_VS_Entregable_4.2_AYymN3HQ6R_ge7LgpJDR'
+    cliProjectName: 'VS Entregable 4.2'
+    cliProjectVersion: 1.0
+    cliSources: .
+
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '3.1.x'
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- script: |
+    az login
+    terraform init
+    terraform fmt
+    terraform validate
+  displayName: 'Terraform Init, Format and Validate'
+  
+- script: 'terraform plan -out=tfplan'
+  displayName: 'Terraform Plan'
+
+- script: 'terraform apply -auto-approve tfplan'
+  displayName: 'Terraform Apply'
+
+- task: SonarQubeAnalyze@5
+  displayName: 'Análisis de código'
+  inputs:
+    jdkversion: 'JAVA_HOME_11_X64'
+
+- task: SonarQubePublish@5
+  displayName: 'Publicación de los resultados'
+  inputs:
+    pollingTimeoutSec: '300'
