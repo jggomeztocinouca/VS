@@ -23,7 +23,6 @@ steps:
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - script: |
-    az login
     terraform init
     terraform fmt
     terraform validate
