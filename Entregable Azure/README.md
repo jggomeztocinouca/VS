@@ -356,7 +356,6 @@ steps:
       installationPath: $(Agent.ToolsDirectory)/dotnet
 
   - script: |
-      az login
       terraform init
       terraform fmt
       terraform validate
@@ -391,11 +390,9 @@ Este pipeline realiza las siguientes operaciones:
       Esta tarea instala la versión 3.1.x de _.NET Core_ en la máquina virtual de _Azure_.
    3. **Inicialización, Formateo y Validación de la configuración Terraform**:  
       Esta tarea ejecuta los comandos necesarios para desplegar la infraestructura, configurada en el archivo de configuración Terraform, en un entorno de _Azure_.
-      1. Ejecuta el comando `az login` para iniciar sesión en _Azure_. Esto es necesario para poder ejecutar los comandos de _Terraform_, debido a la falta de permisos otorgados en la suscripción de _Azure_: _Azure for Students_.
-         - La falta de permisos que presenta la suscripción _Azure for Students_ impide la automatización del despliegue, pero las opciones de autenticación, ya sea por Managed Identity o por Service Principal, requieren de permisos elevados. - Al ejecutar el comando `az login`, la terminal de despliegue nos mostrará un enlace para iniciar sesión en _Azure_ y, seguidamente, un código de autenticación. Deberemos acceder al enlace, introducir el código de autenticación y seleccionar la cuenta de _Azure_ con la que queremos iniciar sesión.
-      2. Ejecuta el comando `terraform init` para inicializar el directorio de trabajo de _Terraform_.
-      3. Ejecuta el comando `terraform fmt` para formatear el archivo de configuración de _Terraform_ a un formato legible y consistente.
-      4. Ejecuta el comando `terraform validate` para comprobar si el archivo de configuración de _Terraform_ presenta una estructura sintácticamente válida.
+      1. Ejecuta el comando `terraform init` para inicializar el directorio de trabajo de _Terraform_.
+      2. Ejecuta el comando `terraform fmt` para formatear el archivo de configuración de _Terraform_ a un formato legible y consistente.
+      3. Ejecuta el comando `terraform validate` para comprobar si el archivo de configuración de _Terraform_ presenta una estructura sintácticamente válida.
    4. **Planificación de la infraestructura Terraform**:
       Esta tarea ejecuta el comando `terraform plan -out=tfplan` para planificar la creación de la infraestructura (lo cual resulta una buena práctica para comprender qué recursos se crearán o modificarán y cómo afectarán a la infraestructura.).
    5. **Despliegue de la infraestructura Terraform**:
