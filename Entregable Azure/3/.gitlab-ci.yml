@@ -1,0 +1,64 @@
+# Configuración del entorno antes de ejecutar los scripts del pipeline.
+before_script:
+  - pip install matplotlib   # Instala la biblioteca Matplotlib.
+  - pip install pandas       # Instala la biblioteca Pandas.
+  - apt-get update -y && apt-get install -y pandoc  # Actualiza y instala Pandoc.
+
+image: python:3.8  # Se utiliza la imagen oficial de Python 3.8 como base.
+
+# Configuración de las etapas del pipeline.
+stages:
+  - clonar         # Etapa de clonacion.
+  - grafico        # Etapa de gráficos.
+  - documentacion  # Etapa de documentación.
+  - io             # Etapa de entrada/salida.
+
+# Configuración de variables.
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive  # Estrategia para manejar submódulos de Git.
+
+# Definición de la tarea en la etapa de clonación.
+clonar:
+  stage: clonar
+  script:
+    - git clone https://oauth2:$GITLAB_ACCESS_TOKEN@gitlab.com/FranME19/EntregableAzureGitlab.git
+  artifacts:
+    paths:
+      - EntregableAzureGitlab  # Define la ruta del artefacto que se almacenará después de la tarea.
+
+# Definición de la tarea en la etapa de gráficos.
+grafico:
+  stage: grafico
+  script:
+    - python grafica.py  # Ejecuta el script Python grafica.py.
+  artifacts:
+    paths:
+      - grafica.png       # Define el artefacto que se almacenará después de la tarea.
+
+# Definición de la tarea en la etapa de documentación.
+documentacion:
+  stage: documentacion
+  script:
+    - python documentacion.py  # Ejecuta el script Python documentacion.py.
+    - pandoc README.md -o README.html  # Convierte README.md a README.html usando Pandoc.
+  artifacts:
+    paths:
+      - README.html       # Define los artefactos que se almacenarán después de la tarea.
+      - README.md
+      - grafica.png
+
+# Tarea de subir los artefactos a GitHub. Para su exposición en GitHub Pages.
+io:
+  stage: io
+  script:
+    - apt-get update -qy                                                                      # Actualiza el sistema.
+    - git config --global user.email "fran.mercadoes@alum.uca.es"                             # Configura el correo de Git.
+    - git config --global user.name "FranME19"                                                # Configura el usuario de Git.
+    - git clone https://FranME19:${GITHUB_ACCESS}@github.com/FranME19/FranME19.github.io.git  # Repositorio.
+    - cd FranME19.github.io                                                                   # Entra en el repositorio.                         
+    - cp ../README.html ./README.html                                                         # Copia los archivos.
+    - cp ../README.md ./README.md                                                          
+    - cp ../grafica.png ./grafica.png
+    - git add --all                                                                           # Añade los archivos.
+    - git commit -m "Deploy GitLab"                                                           # Realiza el commit.
+    - git push -u origin main                                                                 # Realiza el push.

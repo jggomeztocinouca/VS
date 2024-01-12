@@ -1,0 +1,16 @@
+# Práctica GITLAB
+## PIPELINE GITLAB
+El archivo .gitlab-ci.yml es un es un archivo de configuración de un pipeline de CI/CD para gitlab.
+
+Este comienza configurando el entorno antes de ejecutar los scripts del pipeline en la sección before script , donde se instalan las bibliotecas matplotlib y pandas utilizando pip, y se actualiza e instala pandoc utilizando apt-get. A continuación especificaremos la imagen Docker que usaremos, python:3.8.
+
+En la sección variables, se configura la estrategia para manejar los submódulos de Git. En este caso, se utiliza la estrategia recursive.
+
+Luego definimos las etapas del pipeline en la sección stages, en la que encontramos:
+
+* En la etapa clonar, se clona un repositorio de GitLab utilizando un token de acceso. Los archivos clonados se almacenan como artefactos para su uso en etapas posteriores del pipeline.
+* En la etapa grafico, se ejecuta un script de Python llamado grafica.py. El resultado de este script, un archivo llamado grafica.png, se almacena como un artefacto.
+* En la etapa documentacion, se ejecuta otro script de Python llamado documentacion.py y se convierte un archivo README.md a HTML utilizando pandoc. Los archivos resultantes se almacenan como artefactos.
+* En la etapa io, ejecutaremos una serie de comandos para subir los artifacts creados en las etapas anteriores a un repositorio de GitHub, donde se expondra dicha documentacion en GitHub Pages.
+
+
