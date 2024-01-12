@@ -446,7 +446,7 @@ Finalmente, el código incluye un manejo de errores básico. Si el archivo Senso
 
 La gráfica resultante es:
 
-![Promedio móvil de la temperatura](3/grafica.png)
+![Promedio móvil de la temperatura](https://cdn.discordapp.com/attachments/972500686409437236/1195348495859724338/grafica.png?ex=65b3aa09&is=65a13509&hm=1d65d84aecdc37620bc7968fb2c6156a092b56a3116d24cfa735d6d4bd0a1aeb&)
 
 #### documentacion.py
 Este script se encargará de generar un documento Markdown llamado README.md, el cual se formará a partir de una lista de archivos presentes en el repositorio, graficos.txt y pipeline.txt.
